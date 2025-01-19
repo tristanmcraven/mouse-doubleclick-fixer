@@ -5,8 +5,33 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MouseDoubleClickFixer"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
-        
+        Title="DoubleClick Fixer" Height="400" Width="710"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        Background="White">
+    <Grid Margin="15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*" />
+            <RowDefinition Height="1*" />
+        </Grid.RowDefinitions>
+        <Border x:Name="clickArea_Border"
+                Background="GreenYellow"
+                MouseDown="clickArea_Border_MouseDown">
+            <TextBlock Text="Click Me!"
+                       x:Name="clickArea_TextBlock"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Center"/>
+        </Border>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="1*" />
+            </Grid.ColumnDefinitions>
+            <ListBox x:Name="timeSpans_ListBox" />
+            <Button x:Name="reset_Button"
+                    Content="Reset"
+                    Grid.Column="1"
+                    Click="reset_Button_Click"/>
+        </Grid>
     </Grid>
 </Window>

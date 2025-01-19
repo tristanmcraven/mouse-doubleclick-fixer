@@ -4,7 +4,11 @@ using System.Diagnostics;
 using System.IO;
 using System.Media;
 using System.Runtime.InteropServices;
+using System;
 using System.Windows;
+using Hardcodet.Wpf.TaskbarNotification;
+using System.Runtime.CompilerServices;
+using System.Collections.ObjectModel;
 
 namespace MouseDoubleClickFixer
 {
@@ -26,6 +30,7 @@ namespace MouseDoubleClickFixer
             {
                 return SetWindowsHookEx(WH_MOUSE_LL, proc, GetModuleHandle(curModule.ModuleName), 0);
             }
+            
         }
 
         private delegate IntPtr LowLevelMouseProc(int nCode, IntPtr wParam, IntPtr lParam);
@@ -40,11 +45,12 @@ namespace MouseDoubleClickFixer
                 if (wParam == (IntPtr)WM_LBUTTONDOWN)
                 {
                     DateTime now = DateTime.Now;
-                    if ((now - _lastLMBClick).TotalMilliseconds <= DoubleClickThresholdMs)
+                    var timeSpan = now - _lastLMBClick;
+                    GlobalViewModel.TimeSpans.Add(timeSpan);
+                    if (timeSpan.TotalMilliseconds <= DoubleClickThresholdMs)
                     {
                         PlayBeepSound();
-                        // Block the event by returning non-zero
-                        return (IntPtr)1;
+                        return (IntPtr)1; // Block the event by returning non-zero
                     }
                     _lastLMBClick = now;
                 }
@@ -57,9 +63,8 @@ namespace MouseDoubleClickFixer
                     {
                         PlayBeepSound();
                         Debug.WriteLine("mouse5");
-                        // Block the event by returning non-zero
-                        return (IntPtr)1;
-                        
+                        return (IntPtr)1; // Block the event by returning non-zero
+
                     }
                     _lastMouse5Click = now;
                     Debug.WriteLine("mouse5");
@@ -109,6 +114,7 @@ namespace MouseDoubleClickFixer
         {
             base.OnStartup(e);
             _hookID = SetHook(_proc);
+            var tb = (TaskbarIcon)FindResource("TaskbarIcon");
         }
 
         protected override void OnExit(ExitEventArgs e)
@@ -126,6 +132,29 @@ namespace MouseDoubleClickFixer
                 sp.Play();
             }
         }
-    }
 
+        private void exit_MenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            Application.Current.Shutdown();
+        }
+
+        private void settings_MenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            
+        }
+
+        private void open_MenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            OpenMainWindow();
+        }
+
+        private void OpenMainWindow()
+        {
+            var mw = Application.Current.Windows.OfType<MainWindow>().FirstOrDefault();
+            if (mw == null)
+            {
+                new MainWindow().Show();
+            }
+        }
+    }
 }
