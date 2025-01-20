@@ -11,18 +11,25 @@
         Background="White">
     <Grid Margin="15">
         <Grid.RowDefinitions>
+            <RowDefinition Height="auto" />
             <RowDefinition Height="1*" />
             <RowDefinition Height="1*" />
         </Grid.RowDefinitions>
+        <CheckBox x:Name="script_CheckBox"
+                  Checked="script_CheckBox_Checked"
+                  Unchecked="script_CheckBox_Unchecked"
+                  Content="Enable script"
+                  IsChecked="True"/>
         <Border x:Name="clickArea_Border"
                 Background="GreenYellow"
-                MouseDown="clickArea_Border_MouseDown">
+                MouseDown="clickArea_Border_MouseDown"
+                Grid.Row="1">
             <TextBlock Text="Click Me!"
                        x:Name="clickArea_TextBlock"
                        VerticalAlignment="Center"
                        HorizontalAlignment="Center"/>
         </Border>
-        <Grid Grid.Row="1">
+        <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="1*" />
                 <ColumnDefinition Width="1*" />

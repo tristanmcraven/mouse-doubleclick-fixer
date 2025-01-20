@@ -17,13 +17,13 @@ namespace MouseDoubleClickFixer
     /// </summary>
     public partial class App : Application
     {
-        private static IntPtr _hookID = IntPtr.Zero;
-        private static LowLevelMouseProc _proc = HookCallback;
+        public static IntPtr HookID = IntPtr.Zero;
+        public static LowLevelMouseProc Proc = HookCallback;
         private static DateTime _lastLMBClick = DateTime.MinValue;
         private static DateTime _lastMouse5Click = DateTime.MinValue;
         private const int DoubleClickThresholdMs = 60;
 
-        private static IntPtr SetHook(LowLevelMouseProc proc)
+        public static IntPtr SetHook(LowLevelMouseProc proc)
         {
             using (Process curProcess = Process.GetCurrentProcess())
             using (ProcessModule curModule = curProcess.MainModule)
@@ -33,7 +33,7 @@ namespace MouseDoubleClickFixer
             
         }
 
-        private delegate IntPtr LowLevelMouseProc(int nCode, IntPtr wParam, IntPtr lParam);
+        public delegate IntPtr LowLevelMouseProc(int nCode, IntPtr wParam, IntPtr lParam);
 
         private static IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
@@ -41,7 +41,7 @@ namespace MouseDoubleClickFixer
             {
                 MSLLHOOKSTRUCT mouseStruct = Marshal.PtrToStructure<MSLLHOOKSTRUCT>(lParam);
 
-                // Handle Left Mouse Button
+                // LMB
                 if (wParam == (IntPtr)WM_LBUTTONDOWN)
                 {
                     DateTime now = DateTime.Now;
@@ -50,12 +50,12 @@ namespace MouseDoubleClickFixer
                     if (timeSpan.TotalMilliseconds <= DoubleClickThresholdMs)
                     {
                         PlayBeepSound();
-                        return (IntPtr)1; // Block the event by returning non-zero
+                        return (IntPtr)1; // block event
                     }
                     _lastLMBClick = now;
                 }
 
-                // Handle Mouse5 Button (XButton2)
+                // mouse5
                 if (wParam == (IntPtr)WM_XBUTTONDOWN && (int)(mouseStruct.mouseData >> 16) == XBUTTON2)
                 {
                     DateTime now = DateTime.Now;
@@ -63,7 +63,7 @@ namespace MouseDoubleClickFixer
                     {
                         PlayBeepSound();
                         Debug.WriteLine("mouse5");
-                        return (IntPtr)1; // Block the event by returning non-zero
+                        return (IntPtr)1; // block event
 
                     }
                     _lastMouse5Click = now;
@@ -71,14 +71,13 @@ namespace MouseDoubleClickFixer
                 }
             }
 
-            // Pass the event to the next hook in the chain
-            return CallNextHookEx(_hookID, nCode, wParam, lParam);
+            return CallNextHookEx(HookID, nCode, wParam, lParam);
         }
 
         private const int WH_MOUSE_LL = 14;
         private const int WM_LBUTTONDOWN = 0x0201;
         private const int WM_XBUTTONDOWN = 0x020B;
-        private const int XBUTTON2 = 0x0001; // "Mouse5" (go back button)
+        private const int XBUTTON2 = 0x0001; // mouse5 (go back)
 
         [StructLayout(LayoutKind.Sequential)]
         private struct MSLLHOOKSTRUCT
@@ -102,7 +101,7 @@ namespace MouseDoubleClickFixer
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool UnhookWindowsHookEx(IntPtr hhk);
+        public static extern bool UnhookWindowsHookEx(IntPtr hhk);
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         private static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
@@ -113,13 +112,13 @@ namespace MouseDoubleClickFixer
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
-            _hookID = SetHook(_proc);
+            //HookID = SetHook(Proc);
             var tb = (TaskbarIcon)FindResource("TaskbarIcon");
         }
 
         protected override void OnExit(ExitEventArgs e)
         {
-            UnhookWindowsHookEx(_hookID);
+            UnhookWindowsHookEx(HookID);
             base.OnExit(e);
         }
 

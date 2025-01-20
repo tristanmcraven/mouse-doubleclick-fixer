@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -32,7 +33,10 @@ namespace MouseDoubleClickFixer
             ls.Items.Clear();
             foreach (var t in TimeSpans)
             {
-                ls.Items.Add(new TextBlock { Text = FormatTimeSpan(t) });
+                var tb = new TextBlock { Text = FormatTimeSpan(t) };
+                if (t.TotalMilliseconds < Threshold)
+                    tb.Foreground = Brushes.Red;
+                ls.Items.Add(tb);
             }
             if (ls.Items.Count > 0)
                 ls.ScrollIntoView(ls.Items.GetItemAt(ls.Items.Count - 1));
@@ -56,7 +60,7 @@ namespace MouseDoubleClickFixer
             int seconds = (int)timeSpan.TotalSeconds;
             long fractionalTicks = timeSpan.Milliseconds;
 
-            return $"{seconds}.{fractionalTicks:D12}";
+            return $"{seconds}.{fractionalTicks:D3}";
         }
 
         private void reset_Button_Click(object sender, RoutedEventArgs e)
@@ -69,6 +73,24 @@ namespace MouseDoubleClickFixer
             clickArea_TextBlock.Text = "Click Me!";
             clickArea_Border.Background = Brushes.GreenYellow;
             TimeSpans.Clear();
+        }
+
+        private void script_CheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            if (App.HookID == IntPtr.Zero)
+            {
+                App.HookID = App.SetHook(App.Proc);
+            }
+        }
+
+        private void script_CheckBox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            if (App.HookID != IntPtr.Zero)
+            {
+                App.UnhookWindowsHookEx(App.HookID);
+                App.HookID = IntPtr.Zero;
+                Debug.WriteLine("Hook disabled.");
+            }
         }
     }
 }
