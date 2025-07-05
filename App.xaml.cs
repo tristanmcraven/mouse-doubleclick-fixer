@@ -9,6 +9,7 @@ using System.Windows;
 using Hardcodet.Wpf.TaskbarNotification;
 using System.Runtime.CompilerServices;
 using System.Collections.ObjectModel;
+using NAudio.Wave;
 
 namespace MouseDoubleClickFixer
 {
@@ -125,11 +126,19 @@ namespace MouseDoubleClickFixer
         private static void PlayBeepSound()
         {
             var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "assets", "beep.wav");
-            //var path1 = "C:\\Users\\trist\\Music\\beep.wav";
-            using (SoundPlayer sp = new SoundPlayer(path))
+
+            var audioFile = new AudioFileReader(path) { Volume = 0.26f };
+            var outputDevice = new WaveOutEvent();
+
+            outputDevice.Init(audioFile);
+            outputDevice.Play();
+
+            // Clean up after playback finished (async style)
+            outputDevice.PlaybackStopped += (s, e) =>
             {
-                sp.Play();
-            }
+                outputDevice.Dispose();
+                audioFile.Dispose();
+            };
         }
 
         private void exit_MenuItem_Click(object sender, RoutedEventArgs e)
